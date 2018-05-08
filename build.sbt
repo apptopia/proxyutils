@@ -42,7 +42,7 @@ lazy val proxyutils = (project in file("."))
     publishSettings,
     name := projectName,
     libraryDependencies ++= {
-      val akkaV = "2.5.4"
+      val akkaV = "2.5.12"
       val akkaHttpV = "10.0.10"
       Seq(
         "commons-io" % "commons-io" % "2.5",
