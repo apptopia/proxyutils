@@ -8,22 +8,28 @@ import com.karasiq.networkutils.http.HttpStatus
 import com.karasiq.parsers.http.HttpResponse
 import com.karasiq.parsers.socks.SocksClient.SocksVersion.{SocksV4, SocksV5}
 import com.karasiq.parsers.socks.SocksServer.{Codes, _}
+import com.karasiq.networkutils.http.headers.HttpHeader
 
-case class ProxyConnectionRequest(scheme: String, address: InetSocketAddress)
+sealed trait ProxyConnectionRequest
+
+case class HttpProxyConnectionRequest(address: InetSocketAddress, headers: Seq[HttpHeader]) extends ProxyConnectionRequest
+case class HttpsProxyConnectionRequest(address: InetSocketAddress, headers: Seq[HttpHeader]) extends ProxyConnectionRequest
+case class Socks5ProxyConnectionRequest(address: InetSocketAddress) extends ProxyConnectionRequest
+case class Socks4ProxyConnectionRequest(address: InetSocketAddress) extends ProxyConnectionRequest
 
 object ProxyConnectionRequest {
   def successResponse(request: ProxyConnectionRequest): ByteString = {
-    request.scheme match {
-      case "http" ⇒
+    request match {
+      case _: HttpProxyConnectionRequest ⇒
         ByteString.empty
 
-      case "https" ⇒
+      case _: HttpsProxyConnectionRequest ⇒
         HttpResponse((HttpStatus(200, "Connection established"), Nil))
 
-      case "socks" | "socks5" ⇒
+      case _: Socks5ProxyConnectionRequest ⇒
         ConnectionStatusResponse(SocksV5, None, Codes.success(SocksV5))
 
-      case "socks4" ⇒
+      case _: Socks4ProxyConnectionRequest ⇒
         ConnectionStatusResponse(SocksV4, None, Codes.success(SocksV4))
 
       case _ ⇒
@@ -32,14 +38,14 @@ object ProxyConnectionRequest {
   }
 
   def failureResponse(request: ProxyConnectionRequest): ByteString = {
-    request.scheme match {
-      case "http" | "https" ⇒
+    request match {
+      case _: HttpProxyConnectionRequest | _: HttpsProxyConnectionRequest ⇒
         HttpResponse((HttpStatus(400, "Bad Request"), Nil))
 
-      case "socks" | "socks5" ⇒
+      case _: Socks5ProxyConnectionRequest ⇒
         ConnectionStatusResponse(SocksV5, None, Codes.failure(SocksV5))
 
-      case "socks4" ⇒
+      case _: Socks4ProxyConnectionRequest ⇒
         ConnectionStatusResponse(SocksV4, None, Codes.failure(SocksV4))
 
       case _ ⇒

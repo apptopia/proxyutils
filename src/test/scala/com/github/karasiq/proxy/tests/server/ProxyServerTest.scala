@@ -5,24 +5,22 @@ import java.net.InetSocketAddress
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-
 import akka.stream.scaladsl.{Keep, Source}
 import akka.stream.testkit.scaladsl.TestSink
 import akka.util.ByteString
 import com.github.karasiq.proxy.tests.ActorSpec
 import org.scalatest.FlatSpecLike
-
 import com.karasiq.networkutils.http.HttpStatus
 import com.karasiq.parsers.http.{HttpMethod, HttpRequest, HttpResponse}
 import com.karasiq.parsers.socks.SocksClient
 import com.karasiq.parsers.socks.SocksClient.ConnectionRequest
 import com.karasiq.parsers.socks.SocksClient.SocksVersion.{SocksV4, SocksV5}
 import com.karasiq.proxy.ProxyException
-import com.karasiq.proxy.server.{ProxyConnectionRequest, ProxyServer}
+import com.karasiq.proxy.server._
 
 class ProxyServerTest extends ActorSpec with FlatSpecLike  {
   "Proxy server" should "accept HTTP CONNECT" in {
-    HttpRequest((HttpMethod.CONNECT, "http://example.com", Nil)) should beAcceptedAs(ProxyConnectionRequest("https", InetSocketAddress.createUnresolved("example.com", 80)))
+    HttpRequest((HttpMethod.CONNECT, "http://example.com", Nil)) should beAcceptedAs(HttpsProxyConnectionRequest(InetSocketAddress.createUnresolved("example.com", 80), Nil))
   }
 
   it should "fail on plain HTTP" in {
@@ -37,11 +35,11 @@ class ProxyServerTest extends ActorSpec with FlatSpecLike  {
   }
 
   it should "accept SOCKS5" in {
-    ConnectionRequest((SocksV5, SocksClient.Command.TcpConnection, InetSocketAddress.createUnresolved("example.com", 80), "")) should beAcceptedAs(ProxyConnectionRequest("socks", InetSocketAddress.createUnresolved("example.com", 80)))
+    ConnectionRequest((SocksV5, SocksClient.Command.TcpConnection, InetSocketAddress.createUnresolved("example.com", 80), "")) should beAcceptedAs(Socks5ProxyConnectionRequest(InetSocketAddress.createUnresolved("example.com", 80)))
   }
 
   it should "accept SOCKS4" in {
-    ConnectionRequest((SocksV4, SocksClient.Command.TcpConnection, InetSocketAddress.createUnresolved("example.com", 80), "")) should beAcceptedAs(ProxyConnectionRequest("socks4", InetSocketAddress.createUnresolved("example.com", 80)))
+    ConnectionRequest((SocksV4, SocksClient.Command.TcpConnection, InetSocketAddress.createUnresolved("example.com", 80), "")) should beAcceptedAs(Socks4ProxyConnectionRequest(InetSocketAddress.createUnresolved("example.com", 80)))
   }
 
   private[this] def beAcceptedAs(expect: ProxyConnectionRequest) = {

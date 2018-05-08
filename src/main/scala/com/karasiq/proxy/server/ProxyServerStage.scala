@@ -47,7 +47,10 @@ object ProxyServer {
   }
 
   def withSuccess[Mat](flow: Flow[ByteString, ByteString, Mat], request: ProxyConnectionRequest): Flow[ByteString, ByteString, Mat] = {
-    if (request.scheme == "http") flow else withResponse(flow, ProxyConnectionRequest.successResponse(request))
+    if (request.isInstanceOf[HttpProxyConnectionRequest])
+      flow
+    else
+      withResponse(flow, ProxyConnectionRequest.successResponse(request))
   }
 
   def withFailure[Mat](flow: Flow[ByteString, ByteString, Mat], request: ProxyConnectionRequest): Flow[ByteString, ByteString, Mat] = {
@@ -161,7 +164,12 @@ private[proxy] final class ProxyServerStage extends GraphStageWithMaterializedVa
                 failConnection(ex)
               })
             } else {
-              emitRequest(ProxyConnectionRequest(if (socksVersion == SocksVersion.SocksV5) "socks" else "socks4", address))
+              emitRequest(
+                if (socksVersion == SocksVersion.SocksV5)
+                  Socks5ProxyConnectionRequest(address)
+                else
+                  Socks4ProxyConnectionRequest(address)
+              )
             }
 
           case AuthRequest(methods, rest) ⇒
@@ -189,9 +197,9 @@ private[proxy] final class ProxyServerStage extends GraphStageWithMaterializedVa
                 val path = Option(URLParser.withDefaultProtocol(url).getPath).filter(_.nonEmpty).getOrElse("/")
                 val request = HttpRequest((method, path, headers))
                 buffer = request ++ buffer
-                emitRequest(ProxyConnectionRequest("http", address))
+                emitRequest(HttpProxyConnectionRequest(address, headers))
               } else {
-                emitRequest(ProxyConnectionRequest("https", address))
+                emitRequest(HttpsProxyConnectionRequest(address, headers))
               }
             }
 
