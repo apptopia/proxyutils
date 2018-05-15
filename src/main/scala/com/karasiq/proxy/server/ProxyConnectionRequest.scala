@@ -10,12 +10,28 @@ import com.karasiq.parsers.socks.SocksClient.SocksVersion.{SocksV4, SocksV5}
 import com.karasiq.parsers.socks.SocksServer.{Codes, _}
 import com.karasiq.networkutils.http.headers.HttpHeader
 
-sealed trait ProxyConnectionRequest
+sealed trait ProxyConnectionRequest {
+  def scheme: String
+}
 
-case class HttpProxyConnectionRequest(address: InetSocketAddress, headers: Seq[HttpHeader]) extends ProxyConnectionRequest
-case class HttpsProxyConnectionRequest(address: InetSocketAddress, headers: Seq[HttpHeader]) extends ProxyConnectionRequest
-case class Socks5ProxyConnectionRequest(address: InetSocketAddress) extends ProxyConnectionRequest
-case class Socks4ProxyConnectionRequest(address: InetSocketAddress) extends ProxyConnectionRequest
+case class HttpProxyConnectionRequest(address: InetSocketAddress,
+                                      headers: Seq[HttpHeader])
+    extends ProxyConnectionRequest {
+  override def scheme: String = "http"
+}
+case class HttpsProxyConnectionRequest(address: InetSocketAddress,
+                                       headers: Seq[HttpHeader])
+    extends ProxyConnectionRequest {
+  override def scheme: String = "https"
+}
+case class Socks5ProxyConnectionRequest(address: InetSocketAddress)
+    extends ProxyConnectionRequest {
+  override def scheme: String = "socks5"
+}
+case class Socks4ProxyConnectionRequest(address: InetSocketAddress)
+    extends ProxyConnectionRequest {
+  override def scheme: String = "socks4"
+}
 
 object ProxyConnectionRequest {
   def successResponse(request: ProxyConnectionRequest): ByteString = {
@@ -33,7 +49,8 @@ object ProxyConnectionRequest {
         ConnectionStatusResponse(SocksV4, None, Codes.success(SocksV4))
 
       case _ ⇒
-        throw new IllegalArgumentException(s"Invalid proxy connection request: $request")
+        throw new IllegalArgumentException(
+          s"Invalid proxy connection request: $request")
     }
   }
 
@@ -49,7 +66,8 @@ object ProxyConnectionRequest {
         ConnectionStatusResponse(SocksV4, None, Codes.failure(SocksV4))
 
       case _ ⇒
-        throw new IllegalArgumentException(s"Invalid proxy connection request: $request")
+        throw new IllegalArgumentException(
+          s"Invalid proxy connection request: $request")
     }
   }
 }
