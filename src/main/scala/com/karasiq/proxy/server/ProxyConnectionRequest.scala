@@ -12,6 +12,7 @@ import com.karasiq.networkutils.http.headers.HttpHeader
 
 sealed trait ProxyConnectionRequest {
   def scheme: String
+  def headers: Seq[HttpHeader]
 }
 
 case class HttpProxyConnectionRequest(address: InetSocketAddress,
@@ -27,10 +28,12 @@ case class HttpsProxyConnectionRequest(address: InetSocketAddress,
 case class Socks5ProxyConnectionRequest(address: InetSocketAddress)
     extends ProxyConnectionRequest {
   override def scheme: String = "socks5"
+  override def headers: Seq[HttpHeader] = Seq.empty
 }
 case class Socks4ProxyConnectionRequest(address: InetSocketAddress)
     extends ProxyConnectionRequest {
   override def scheme: String = "socks4"
+  override def headers: Seq[HttpHeader] = Seq.empty
 }
 
 object ProxyConnectionRequest {
