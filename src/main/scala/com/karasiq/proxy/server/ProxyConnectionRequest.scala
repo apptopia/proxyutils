@@ -11,6 +11,7 @@ import com.karasiq.parsers.socks.SocksServer.{Codes, _}
 import com.karasiq.networkutils.http.headers.HttpHeader
 
 sealed trait ProxyConnectionRequest {
+  def address: InetSocketAddress
   def scheme: String
   def headers: Seq[HttpHeader]
 }
