@@ -1,9 +1,9 @@
 package com.karasiq.proxy.server
 
 import java.net.InetSocketAddress
+import java.util.UUID
 
 import akka.util.ByteString
-
 import com.karasiq.networkutils.http.HttpStatus
 import com.karasiq.parsers.http.HttpResponse
 import com.karasiq.parsers.socks.SocksClient.SocksVersion.{SocksV4, SocksV5}
@@ -14,6 +14,7 @@ sealed trait ProxyConnectionRequest {
   def address: InetSocketAddress
   def scheme: String
   def headers: Seq[HttpHeader]
+  val id: UUID = UUID.randomUUID
 }
 
 case class HttpProxyConnectionRequest(address: InetSocketAddress,
