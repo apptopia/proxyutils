@@ -42,8 +42,8 @@ lazy val proxyutils = (project in file("."))
     publishSettings,
     name := projectName,
     libraryDependencies ++= {
-      val akkaV = "2.5.12"
-      val akkaHttpV = "10.0.10"
+      val akkaV = "2.5.16"
+      val akkaHttpV = "10.0.11"
       Seq(
         "commons-io" % "commons-io" % "2.5",
         "org.apache.httpcomponents" % "httpclient" % "4.5.3",
@@ -52,7 +52,7 @@ lazy val proxyutils = (project in file("."))
         "com.typesafe.akka" %% "akka-http" % akkaHttpV,
         "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
         "com.typesafe.akka" %% "akka-stream-testkit" % akkaV % "test",
-        "com.github.karasiq" %% "commons-akka" % "1.0.7",
+        "com.github.karasiq" %% "commons-akka" % "1.0.10",
         "com.github.karasiq" %% "cryptoutils" % "1.4.3",
         "org.scalatest" %% "scalatest" % "3.0.4" % "test",
         "org.bouncycastle" % "bcprov-jdk15on" % "1.58" % "provided",
