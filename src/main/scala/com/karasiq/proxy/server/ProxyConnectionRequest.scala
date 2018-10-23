@@ -5,10 +5,10 @@ import java.util.UUID
 
 import akka.util.ByteString
 import com.karasiq.networkutils.http.HttpStatus
+import com.karasiq.networkutils.http.headers.HttpHeader
 import com.karasiq.parsers.http.HttpResponse
 import com.karasiq.parsers.socks.SocksClient.SocksVersion.{SocksV4, SocksV5}
 import com.karasiq.parsers.socks.SocksServer.{Codes, _}
-import com.karasiq.networkutils.http.headers.HttpHeader
 
 sealed trait ProxyConnectionRequest {
   def address: InetSocketAddress
@@ -62,7 +62,7 @@ object ProxyConnectionRequest {
   def failureResponse(request: ProxyConnectionRequest): ByteString = {
     request match {
       case _: HttpProxyConnectionRequest | _: HttpsProxyConnectionRequest ⇒
-        HttpResponse((HttpStatus(400, "Bad Request"), Nil))
+        HttpResponse((HttpStatus(502, "Bad Gateway"), Nil))
 
       case _: Socks5ProxyConnectionRequest ⇒
         ConnectionStatusResponse(SocksV5, None, Codes.failure(SocksV5))
